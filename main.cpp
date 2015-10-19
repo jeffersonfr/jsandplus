@@ -1652,9 +1652,9 @@ int main(int argc, char **argv)
 
 	screen.Show();
 
-	while (true) {
+	do {
 		screen.Repaint();
-	}
+	} while (screen.IsVisible() == true);
 
 	return 0;
 }
