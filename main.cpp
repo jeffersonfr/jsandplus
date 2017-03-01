@@ -2,7 +2,8 @@
  * This is a port of original project SDLSand <https://github.com/zear/SDLSand>.
  *
  */
-#include "jframe.h"
+#include "japplication.h"
+#include "jwidget.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -80,7 +81,7 @@ typedef struct {
 	jparticle_type_t particleType;
 } jbutton_rect_t;
 
-class Screen : public jgui::Frame {
+class Screen : public jgui::Widget {
 
 	private:
 		jparticle_type_t *_vs;
@@ -114,7 +115,7 @@ class Screen : public jgui::Frame {
 
 	public:
 		Screen():
-			jgui::Frame()
+			jgui::Widget(0, 0, 720, 480)
 		{
 			_vs = new jparticle_type_t[GetWidth()*GetHeight()];
 
@@ -151,8 +152,6 @@ class Screen : public jgui::Frame {
 
 			init();
 			Clear();
-
-			SetUndecorated(true);
 		}
 
 		virtual ~Screen()
@@ -1253,7 +1252,7 @@ class Screen : public jgui::Frame {
 
 		virtual bool KeyPressed(jgui::KeyEvent *event) 
 		{
-			if (jgui::Frame::KeyPressed(event) == true) {
+			if (jgui::Widget::KeyPressed(event) == true) {
 				return true;
 			}
 
@@ -1462,7 +1461,7 @@ class Screen : public jgui::Frame {
 
 		virtual bool KeyReleased(jgui::KeyEvent *event) 
 		{
-			if (jgui::Frame::KeyReleased(event) == true) {
+			if (jgui::Widget::KeyReleased(event) == true) {
 				return true;
 			}
 
@@ -1481,7 +1480,7 @@ class Screen : public jgui::Frame {
 
 		virtual bool MousePressed(jgui::MouseEvent *event)
 		{
-			if (jgui::Frame::MousePressed(event) == true) {
+			if (jgui::Widget::MousePressed(event) == true) {
 				return true;
 			}
 
@@ -1501,7 +1500,7 @@ class Screen : public jgui::Frame {
 
 		virtual bool MouseReleased(jgui::MouseEvent *event)
 		{
-			if (jgui::Frame::MouseReleased(event) == true) {
+			if (jgui::Widget::MouseReleased(event) == true) {
 				return true;
 			}
 
@@ -1518,7 +1517,7 @@ class Screen : public jgui::Frame {
 
 		virtual bool MouseMoved(jgui::MouseEvent *event)
 		{
-			if (jgui::Frame::MouseMoved(event) == true) {
+			if (jgui::Widget::MouseMoved(event) == true) {
 				return true;
 			}
 
@@ -1538,7 +1537,7 @@ class Screen : public jgui::Frame {
 
 		virtual void Paint(jgui::Graphics *g) 
 		{
-			jgui::Frame::Paint(g);
+			jgui::Widget::Paint(g);
 
 			if (_slow) {
 				if (_speed_x > 0) {
@@ -1642,19 +1641,31 @@ class Screen : public jgui::Frame {
 			drawPenSize();
 			drawCursor(_old_x, _old_y);
 		}
+
+		jgui::Graphics * GetGraphics()
+		{
+			return jgui::Application::GetInstance()->GetGraphics();
+		}
+
 };
 
 int main(int argc, char **argv)
 {
+	jgui::Application *main = jgui::Application::GetInstance();
+
 	srand(time(NULL));
 
-	Screen screen;
+	Screen app;
 
-	screen.Show();
+	main->Add(&app);
+	main->SetSize(app.GetWidth(), app.GetHeight());
+	main->SetVisible(true);
 
 	do {
-		screen.Repaint();
-	} while (screen.IsVisible() == true);
+		app.Repaint();
+	} while (app.IsHidden() == false);
+
+	main->WaitForExit();
 
 	return 0;
 }
