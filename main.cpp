@@ -2,8 +2,8 @@
  * This is a port of original project SDLSand <https://github.com/zear/SDLSand>.
  *
  */
-#include "japplication.h"
-#include "jwidget.h"
+#include "jgui/japplication.h"
+#include "jgui/jwindow.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -81,7 +81,7 @@ typedef struct {
 	jparticle_type_t particleType;
 } jbutton_rect_t;
 
-class Screen : public jgui::Widget {
+class Screen : public jgui::Window {
 
 	private:
 		jparticle_type_t *_vs;
@@ -115,9 +115,12 @@ class Screen : public jgui::Widget {
 
 	public:
 		Screen():
-			jgui::Widget(0, 0, 720, 480)
+			jgui::Window(0, 0, 720, 480)
 		{
-			_vs = new jparticle_type_t[GetWidth()*GetHeight()];
+      jgui::jsize_t
+        size = GetSize();
+
+			_vs = new jparticle_type_t[size.width*size.height];
 
 			_water_density = 0.3f;
 			_sand_density = 0.3f;
@@ -133,8 +136,8 @@ class Screen : public jgui::Widget {
 			_can_move_y = 0;
 			_mb_x = 0;
 			_mb_y = 0;
-			_old_x = GetWidth()/2;
-			_old_y = GetHeight()/2;
+			_old_x = size.width/2;
+			_old_y = size.height/2;
 			_is_button_down = false;
 
 			_particle_count = 0;
@@ -146,9 +149,9 @@ class Screen : public jgui::Widget {
 
 			_implement_particle_swaps = true;
 
-			_upper_row_y = GetHeight() - BUTTON_SIZE - 1;
-			_middle_row_y = GetHeight() - BUTTON_SIZE - 1;
-			_lower_row_y = GetHeight() - BUTTON_SIZE - 1;
+			_upper_row_y = size.height - BUTTON_SIZE - 1;
+			_middle_row_y = size.height - BUTTON_SIZE - 1;
+			_lower_row_y = size.height - BUTTON_SIZE - 1;
 
 			init();
 			Clear();
@@ -227,23 +230,35 @@ class Screen : public jgui::Widget {
 		// at a given position withing the width)
 		void Emit(int x, int width, jparticle_type_t type, float p)
 		{
+      jgui::jsize_t
+        size = GetSize();
+
 			for (int i=x-width/2; i<x+width/2; i++) {
 				if (rand() < (int)(RAND_MAX * p)) {
-					_vs[i+GetWidth()] = type;
+					_vs[i + size.width] = type;
 				}
 			}
 		}
 
 		void StillbornParticleLogic(int x,int y,jparticle_type_t type)
 		{
-			int index, above, left, right, below, same, abovetwo;
+      jgui::jsize_t
+        size = GetSize();
+			int 
+        index, 
+        above, 
+        left, 
+        right, 
+        below, 
+        same, 
+        abovetwo;
 
 			switch (type) {
 				case JPT_VOID:
-					above = x+((y-1)*GetWidth());
-					left = (x+1)+(y*GetWidth());
-					right = (x-1)+(y*GetWidth());
-					below = x+((y+1)*GetWidth());
+					above = x + ((y - 1)*size.width);
+					left = (x + 1) + (y*size.width);
+					right = (x - 1) + (y*size.width);
+					below = x + ((y + 1)*size.width);
 
 					if (_vs[above] != JPT_NOTHING) {
 						_vs[above] = JPT_NOTHING;
@@ -263,19 +278,19 @@ class Screen : public jgui::Widget {
 
 					break;
 				case JPT_IRONWALL:
-					above = x+((y-1)*GetWidth());
-					left = (x+1)+(y*GetWidth());
-					right = (x-1)+(y*GetWidth());
+					above = x + ((y - 1)*size.width);
+					left = (x + 1) + (y*size.width);
+					right = (x - 1)+(y*size.width);
 
 					if (rand()%200 == 0 && (_vs[above] == JPT_RUST || _vs[left] == JPT_RUST || _vs[right] == JPT_RUST)) {
-						_vs[x+(y*GetWidth())] = JPT_RUST;
+						_vs[x + (y*size.width)] = JPT_RUST;
 					}
 
 					break;
 				case JPT_TORCH:
-					above = x+((y-1)*GetWidth());
-					left = (x+1)+(y*GetWidth());
-					right = (x-1)+(y*GetWidth());
+					above = x + ((y - 1)*size.width);
+					left = (x + 1) + (y*size.width);
+					right = (x - 1) + (y*size.width);
 
 					if (rand()%2 == 0) { // Spawns fire
 						if (_vs[above] == JPT_NOTHING || _vs[above] == JPT_MOVEDFIRE) { //Fire above
@@ -309,10 +324,10 @@ class Screen : public jgui::Widget {
 						index = 0;
 
 						switch (rand()%4) {
-							case 0: index = (x-1)+(y*GetWidth()); break;
-							case 1: index = x+((y-1)*GetWidth()); break;
-							case 2: index = (x+1)+(y*GetWidth()); break;
-							case 3:	index = x+((y+1)*GetWidth()); break;
+							case 0: index = (x - 1)+(y*size.width); break;
+							case 1: index = x + ((y - 1)*size.width); break;
+							case 2: index = (x + 1) + (y*size.width); break;
+							case 3:	index = x + ((y + 1)*size.width); break;
 						}
 
 						if (_vs[index] == JPT_WATER) {
@@ -321,7 +336,7 @@ class Screen : public jgui::Widget {
 					}
 					break;
 				case JPT_EMBER:
-					below = x+((y+1)*GetWidth());
+					below = x + ((y + 1)*size.width);
 
 					if (_vs[below] == JPT_NOTHING || IsBurnable(_vs[below])) {
 						_vs[below] = JPT_FIRE;
@@ -330,10 +345,10 @@ class Screen : public jgui::Widget {
 					index = 0;
 
 					switch (rand()%4) {
-						case 0: index = (x-1)+(y*GetWidth()); break;
-						case 1: index = x+((y-1)*GetWidth()); break;
-						case 2: index = (x+1)+(y*GetWidth()); break;
-						case 3:	index = x+((y+1)*GetWidth()); break;
+						case 0: index = (x - 1) + (y*size.width); break;
+						case 1: index = x + ((y - 1)*size.width); break;
+						case 2: index = (x + 1) + (y*size.width); break;
+						case 3:	index = x + ((y + 1)*size.width); break;
 					}
 
 					if (_vs[index] == JPT_PLANT) {
@@ -341,13 +356,13 @@ class Screen : public jgui::Widget {
 					}
 
 					if (rand()%18 == 0) { // Making ember burn out _slowly
-						_vs[x+(y*GetWidth())] = JPT_NOTHING;
+						_vs[x + (y*size.width)] = JPT_NOTHING;
 					}
 
 					break;
 				case JPT_STOVE:
-					above = x+((y-1)*GetWidth());
-					abovetwo = x+((y-2)*GetWidth());
+					above = x + ((y - 1)*size.width);
+					abovetwo = x + ((y - 2)*size.width);
 
 					if (rand()%4 == 0 && _vs[above] == JPT_WATER) { // Boil the water
 						_vs[above] = JPT_STEAM;
@@ -365,7 +380,7 @@ class Screen : public jgui::Widget {
 					break;
 				case JPT_RUST:
 					if (rand()%7000 == 0) { //Deteriate rust
-						_vs[x+(y*GetWidth())] = JPT_NOTHING;
+						_vs[x + (y*size.width)] = JPT_NOTHING;
 					}
 
 					break;
@@ -373,7 +388,7 @@ class Screen : public jgui::Widget {
 					//####################### SPOUTS ####################### 
 				case JPT_WATERSPOUT:
 					if (rand()%6 == 0) { // Take it easy on the spout
-						below = x+((y+1)*GetWidth());
+						below = x + ((y + 1)*size.width);
 
 						if (_vs[below] == JPT_NOTHING) {
 							_vs[below] = JPT_MOVEDWATER;
@@ -383,7 +398,7 @@ class Screen : public jgui::Widget {
 					break;
 				case JPT_SANDSPOUT:
 					if (rand()%6 == 0) { // Take it easy on the spout
-						below = x+((y+1)*GetWidth());
+						below = x + ((y + 1)*size.width);
 
 						if (_vs[below] == JPT_NOTHING) {
 							_vs[below] = JPT_MOVEDSAND;
@@ -393,7 +408,7 @@ class Screen : public jgui::Widget {
 					break;
 				case JPT_SALTSPOUT:
 					if (rand()%6 == 0) { // Take it easy on the spout
-						below = x+((y+1)*GetWidth());
+						below = x + ((y + 1)*size.width);
 
 						if (_vs[below] == JPT_NOTHING) {
 							_vs[below] = JPT_MOVEDSALT;
@@ -407,7 +422,7 @@ class Screen : public jgui::Widget {
 					break;
 				case JPT_OILSPOUT:
 					if (rand()%6 == 0) { // Take it easy on the spout
-						below = x+((y+1)*GetWidth());
+						below = x + ((y + 1)*size.width);
 
 						if (_vs[below] == JPT_NOTHING) {
 							_vs[below] = JPT_MOVEDOIL;
@@ -425,11 +440,14 @@ class Screen : public jgui::Widget {
 		// will be MOVEDSAND
 		inline void MoveParticle(int x, int y, jparticle_type_t type)
 		{
+      jgui::jsize_t
+        size = GetSize();
+
 			type = (jparticle_type_t)(type+1);
 
-			int above = x+((y-1)*GetWidth());
-			int same = x+(GetWidth()*y);
-			int below = x+((y+1)*GetWidth());
+			int above = x + ((y - 1)*size.width);
+			int same = x + (size.width*y);
+			int below = x + ((y + 1)*size.width);
 
 			// If nothing below then just fall (gravity)
 			if (!IsFloating(type)) {
@@ -460,8 +478,8 @@ class Screen : public jgui::Widget {
 			int sign = (rand() % 2 == 0)?-1:1;
 
 			// We'll only calculate these indicies once for optimization purpose
-			int first = (x+sign)+(GetWidth()*y);
-			int second = (x-sign)+(GetWidth()*y);
+			int first = (x + sign) + (size.width*y);
+			int second = (x - sign) + (size.width*y);
 			int index = 0;
 
 			//Particle type specific logic
@@ -699,8 +717,8 @@ class Screen : public jgui::Widget {
 			// The place below (x,y+1) is filled with something, then check (x+sign,y+1) and (x-sign,y+1).
 			// We chose sign randomly to randomly check eigther left or right. This is for elements that fall _is_button_downward
 			if (!IsFloating(type)) {
-				int first_is_button_down = (x+sign)+((y+1)*GetWidth());
-				int second_is_button_down = (x-sign)+((y+1)*GetWidth());
+				int first_is_button_down = (x + sign) + ((y + 1)*size.width);
+				int second_is_button_down = (x - sign) + ((y + 1)*size.width);
 
 				if ( _vs[first_is_button_down] == JPT_NOTHING) {
 					_vs[first_is_button_down] = type;
@@ -717,8 +735,8 @@ class Screen : public jgui::Widget {
 				}
 			} else if (type == JPT_MOVEDSTEAM) {
 				// Make steam move
-				int firstup = (x+sign)+((y-1)*GetWidth());
-				int secondup = (x-sign)+((y-1)*GetWidth());
+				int firstup = (x + sign) + ((y - 1)*size.width);
+				int secondup = (x - sign) + ((y - 1)*size.width);
 
 				if ( _vs[firstup] == JPT_NOTHING) {
 					_vs[firstup] = type;
@@ -739,10 +757,13 @@ class Screen : public jgui::Widget {
 		//Drawing a filled circle at a given position with a given radius and a given partice type
 		void DrawParticles(int xpos, int ypos, int radius, jparticle_type_t type)
 		{
-			for (int x=((xpos-radius-1) < 0)?0:(xpos-radius-1); x<=xpos+radius && x<GetWidth(); x++) {
-				for (int y=((ypos-radius-1) < 0)?0:(ypos-radius-1); y<=ypos+radius && y<GetHeight(); y++) {
-					if ((x-xpos)*(x-xpos) + (y-ypos)*(y-ypos) <= radius*radius) {
-						_vs[x+(GetWidth()*y)] = type;
+      jgui::jsize_t
+        size = GetSize();
+
+			for (int x=((xpos-radius-1) < 0)?0:(xpos-radius-1); x<=xpos+radius && x<size.width; x++) {
+				for (int y=((ypos-radius-1) < 0)?0:(ypos-radius-1); y<=ypos+radius && y<size.height; y++) {
+					if ((x - xpos)*(x - xpos) + (y - ypos)*(y - ypos) <= radius*radius) {
+						_vs[x + (size.width*y)] = type;
 					}
 				}
 			}
@@ -763,21 +784,25 @@ class Screen : public jgui::Widget {
 
 		void DoRandomLines(jparticle_type_t type)
 		{
-			jparticle_type_t tmp = _current_particle;
+      jgui::jsize_t
+        size = GetSize();
+			jparticle_type_t 
+        tmp = _current_particle;
+
 			_current_particle = type;
 
 			for (int i = 0; i < 20; i++) {
-				int x1 = rand() % GetWidth();
-				int x2 = rand() % GetWidth();
+				int x1 = rand() % size.width;
+				int x2 = rand() % size.width;
 
-				DrawLine(x1,0,x2,GetHeight());
+				DrawLine(x1, 0, x2, size.height);
 			}
 
 			for (int i = 0; i < 20; i++) {
-				int y1 = rand() % GetHeight();
-				int y2 = rand() % GetHeight();
+				int y1 = rand() % size.height;
+				int y2 = rand() % size.height;
 
-				DrawLine(0,y1,GetWidth(),y2);
+				DrawLine(0, y1, size.width, y2);
 			}
 
 			_current_particle = tmp;
@@ -785,7 +810,10 @@ class Screen : public jgui::Widget {
 
 		inline void UpdateVirtualPixel(int x, int y)
 		{
-			jparticle_type_t same = _vs[x+(GetWidth()*y)];
+      jgui::jsize_t
+        size = GetSize();
+			jparticle_type_t 
+        same = _vs[x + (size.width*y)];
 
 			if (same != JPT_NOTHING) {
 				if (IsStillborn(same)) {
@@ -801,15 +829,18 @@ class Screen : public jgui::Widget {
 		// Updating the particle system (virtual screen) pixel by pixel
 		inline void UpdateVirtualScreen()
 		{
-			for (int y =0; y< GetHeight()-DASHBOARD_SIZE; y++) {
+      jgui::jsize_t
+        size = GetSize();
+
+			for (int y =0; y<size.height-DASHBOARD_SIZE; y++) {
 				// Due to biasing when iterating through the scanline from left to right,
 				// we now chose our direction randomly per scanline.
 				if (rand() % 2 == 0) {
-					for (int x = GetWidth()-2; x--;) {
+					for (int x=size.width-2; x--;) {
 						UpdateVirtualPixel(x,y);
 					}
 				} else {
-					for (int x = 1; x < GetWidth() - 1; x++) {
+					for (int x=1; x<size.width-1; x++) {
 						UpdateVirtualPixel(x,y);
 					}
 				}
@@ -819,33 +850,24 @@ class Screen : public jgui::Widget {
 		//Cearing the particle system
 		void Clear()
 		{
-			for (int w = 0; w < GetWidth() ; w++) {
-				for (int h = 0; h < GetHeight(); h++) {
-					_vs[w+(GetWidth()*h)] = JPT_NOTHING;
+      jgui::jsize_t
+        size = GetSize();
+
+			for (int w=0; w<size.width ; w++) {
+				for (int h=0; h<size.height; h++) {
+					_vs[w + (size.width*h)] = JPT_NOTHING;
 				}
 			}
 		}
 
-		void DrawRect(jgui::jregion_t bounds, uint32_t color)
+		void DrawRect(jgui::Graphics *g, jgui::jregion_t bounds, uint32_t color)
 		{
-			jgui::Graphics *g = GetGraphics();
-
-			if (g == NULL) {
-				return;
-			}
-
 			g->SetColor(color);
 			g->DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 		}
 
-		void FillRect(jgui::jregion_t bounds, uint32_t color)
+		void FillRect(jgui::Graphics *g, jgui::jregion_t bounds, uint32_t color)
 		{
-			jgui::Graphics *g = GetGraphics();
-
-			if (g == NULL) {
-				return;
-			}
-
 			g->SetColor(color);
 			g->FillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
 		}
@@ -858,7 +880,6 @@ class Screen : public jgui::Widget {
 			wateroutput.y = _upper_row_y;
 			wateroutput.width = BUTTON_SIZE;
 			wateroutput.height = BUTTON_SIZE;
-			FillRect(wateroutput,colors[JPT_WATER]);
 			jbutton_rect_t warect;
 			warect.rect = wateroutput;
 			warect.particleType = JPT_WATER;
@@ -870,7 +891,6 @@ class Screen : public jgui::Widget {
 			sandoutput.y = _upper_row_y;
 			sandoutput.width = BUTTON_SIZE;
 			sandoutput.height = BUTTON_SIZE;
-			FillRect(sandoutput,colors[JPT_SAND]);
 			jbutton_rect_t sanrect;
 			sanrect.rect = sandoutput;
 			sanrect.particleType = JPT_SAND;
@@ -882,7 +902,6 @@ class Screen : public jgui::Widget {
 			saltoutput.y = _upper_row_y;
 			saltoutput.width = BUTTON_SIZE;
 			saltoutput.height = BUTTON_SIZE;
-			FillRect(saltoutput,colors[JPT_SALT]);
 			jbutton_rect_t sarect;
 			sarect.rect = saltoutput;
 			sarect.particleType = JPT_SALT;
@@ -894,7 +913,6 @@ class Screen : public jgui::Widget {
 			oiloutput.y = _upper_row_y;
 			oiloutput.width = BUTTON_SIZE;
 			oiloutput.height = BUTTON_SIZE;
-			FillRect(oiloutput,colors[JPT_OIL]);
 			jbutton_rect_t oirect;
 			oirect.rect = oiloutput;
 			oirect.particleType = JPT_OIL;
@@ -906,7 +924,6 @@ class Screen : public jgui::Widget {
 			fire.y = _upper_row_y;
 			fire.width = BUTTON_SIZE;
 			fire.height = BUTTON_SIZE;
-			FillRect(fire,colors[JPT_FIRE]);
 			jbutton_rect_t firect;
 			firect.particleType = JPT_FIRE;
 			firect.rect = fire;
@@ -918,7 +935,6 @@ class Screen : public jgui::Widget {
 			acid.y = _upper_row_y;
 			acid.width = BUTTON_SIZE;
 			acid.height = BUTTON_SIZE;
-			FillRect(acid,colors[JPT_ACID]);
 			jbutton_rect_t acrect;
 			acrect.particleType = JPT_ACID;
 			acrect.rect = acid;
@@ -930,7 +946,6 @@ class Screen : public jgui::Widget {
 			dirtoutput.y = _upper_row_y;
 			dirtoutput.width = BUTTON_SIZE;
 			dirtoutput.height = BUTTON_SIZE;
-			FillRect(dirtoutput,colors[JPT_DIRT]);
 			jbutton_rect_t direct;
 			direct.rect = dirtoutput;
 			direct.particleType = JPT_DIRT;
@@ -942,7 +957,6 @@ class Screen : public jgui::Widget {
 			spwater.y = _middle_row_y;
 			spwater.width = BUTTON_SIZE;
 			spwater.height = BUTTON_SIZE;
-			FillRect(spwater,colors[JPT_WATERSPOUT]);
 			jbutton_rect_t spwrect;
 			spwrect.particleType = JPT_WATERSPOUT;
 			spwrect.rect = spwater;
@@ -954,7 +968,6 @@ class Screen : public jgui::Widget {
 			spdirt.y = _middle_row_y;
 			spdirt.width = BUTTON_SIZE;
 			spdirt.height = BUTTON_SIZE;
-			FillRect(spdirt,colors[JPT_SANDSPOUT]);
 			jbutton_rect_t spdrect;
 			spdrect.particleType = JPT_SANDSPOUT;
 			spdrect.rect = spdirt;
@@ -966,7 +979,6 @@ class Screen : public jgui::Widget {
 			spsalt.y = _middle_row_y;
 			spsalt.width = BUTTON_SIZE;
 			spsalt.height = BUTTON_SIZE;
-			FillRect(spsalt,colors[JPT_SALTSPOUT]);
 			jbutton_rect_t spsrect;
 			spsrect.particleType = JPT_SALTSPOUT;
 			spsrect.rect = spsalt;
@@ -978,7 +990,6 @@ class Screen : public jgui::Widget {
 			spoil.y = _middle_row_y;
 			spoil.width = BUTTON_SIZE;
 			spoil.height = BUTTON_SIZE;
-			FillRect(spoil,colors[JPT_OILSPOUT]);
 			jbutton_rect_t sporect;
 			sporect.particleType = JPT_OILSPOUT;
 			sporect.rect = spoil;
@@ -990,7 +1001,6 @@ class Screen : public jgui::Widget {
 			wall.y = _lower_row_y;
 			wall.width = BUTTON_SIZE;
 			wall.height = BUTTON_SIZE;
-			FillRect(wall,colors[JPT_WALL]);
 			jbutton_rect_t walrect;
 			walrect.particleType = JPT_WALL;
 			walrect.rect = wall;
@@ -1002,7 +1012,6 @@ class Screen : public jgui::Widget {
 			torch.y = _lower_row_y;
 			torch.width = BUTTON_SIZE;
 			torch.height = BUTTON_SIZE;
-			FillRect(torch,colors[JPT_TORCH]);
 			jbutton_rect_t torect;
 			torect.particleType = JPT_TORCH;
 			torect.rect = torch;
@@ -1014,7 +1023,6 @@ class Screen : public jgui::Widget {
 			stove.y = _lower_row_y;
 			stove.width = BUTTON_SIZE;
 			stove.height = BUTTON_SIZE;
-			FillRect(stove,colors[JPT_STOVE]);
 			jbutton_rect_t storect;
 			storect.particleType = JPT_STOVE;
 			storect.rect = stove;
@@ -1026,7 +1034,6 @@ class Screen : public jgui::Widget {
 			plant.y = _lower_row_y;
 			plant.width = BUTTON_SIZE;
 			plant.height = BUTTON_SIZE;
-			FillRect(plant,colors[JPT_PLANT]);
 			jbutton_rect_t prect;
 			prect.particleType = JPT_PLANT;
 			prect.rect = plant;
@@ -1038,7 +1045,6 @@ class Screen : public jgui::Widget {
 			ice.y = _lower_row_y;
 			ice.width = BUTTON_SIZE;
 			ice.height = BUTTON_SIZE;
-			FillRect(ice,colors[JPT_ICE]);
 			jbutton_rect_t irect;
 			irect.particleType = JPT_ICE;
 			irect.rect = ice;
@@ -1050,7 +1056,6 @@ class Screen : public jgui::Widget {
 			iw.y = _lower_row_y;
 			iw.width = BUTTON_SIZE;
 			iw.height = BUTTON_SIZE;
-			FillRect(iw,colors[JPT_IRONWALL]);
 			jbutton_rect_t iwrect;
 			iwrect.particleType = JPT_IRONWALL;
 			iwrect.rect = iw;
@@ -1062,7 +1067,6 @@ class Screen : public jgui::Widget {
 			voidele.y = _lower_row_y;
 			voidele.width = BUTTON_SIZE;
 			voidele.height = BUTTON_SIZE;
-			FillRect(voidele,colors[JPT_VOID]);
 			jbutton_rect_t voidelerect;
 			voidelerect.particleType = JPT_VOID;
 			voidelerect.rect = voidele;
@@ -1074,7 +1078,6 @@ class Screen : public jgui::Widget {
 			eraser.y = _lower_row_y;
 			eraser.width = BUTTON_SIZE;
 			eraser.height = BUTTON_SIZE;
-			FillRect(eraser,0);
 			jbutton_rect_t eraserrect;
 			eraserrect.particleType = JPT_NOTHING;
 			eraserrect.rect = eraser;
@@ -1084,20 +1087,23 @@ class Screen : public jgui::Widget {
 		// Initializing the screen
 		void init()
 		{
+      jgui::jsize_t
+        size = GetSize();
+
 			initColors();
 
 			_scene.x = 0;
 			_scene.y = 0;
-			_scene.width = GetWidth();
-			_scene.height = GetHeight()-DASHBOARD_SIZE;
+			_scene.width = size.width;
+			_scene.height = size.height - DASHBOARD_SIZE;
 
 			//set up dashboard
 			jgui::jregion_t dashboard ;
+
 			dashboard.x = 0;
-			dashboard.y = GetHeight()-DASHBOARD_SIZE;
-			dashboard.width = GetWidth();
+			dashboard.y = size.height - DASHBOARD_SIZE;
+			dashboard.width = size.width;
 			dashboard.height = DASHBOARD_SIZE;
-			FillRect(dashboard, 0xff9b9b9b);
 
 			InitButtons();
 		}
@@ -1192,31 +1198,37 @@ class Screen : public jgui::Widget {
 			return "";
 		}
 
-		void drawSelection()
+		void drawSelection(jgui::Graphics *g)
 		{
-			for (int i = BUTTON_COUNT; i--;) {
+      jgui::jsize_t
+        size = GetSize();
+
+			for (int i=BUTTON_COUNT; i--;) {
 				jbutton_rect_t button = _buttons[i];
 
 				if (_current_particle == button.particleType) {
-					DrawRect(button.rect, 0xff000000);
+					DrawRect(g, button.rect, 0xff000000);
 
-					GetGraphics()->DrawString(GetParticleName(_current_particle), 0, button.rect.y, GetWidth()-BUTTON_GAP, button.rect.height, jgui::JHA_RIGHT);
+					g->DrawString(GetParticleName(_current_particle), 0, button.rect.y, size.width - BUTTON_GAP, button.rect.height, jgui::JHA_RIGHT);
 				}
 			}
 		}
 
-		void drawCursor(int x, int y)
+		void drawCursor(jgui::Graphics *g, int x, int y)
 		{
 			jgui::jregion_t partHorizontal = { x+1, y+1, 4, 1 };
 			jgui::jregion_t partVertical = { x+1, y+1, 1, 4 };
 
-			FillRect(partHorizontal, 0xffff00ff);
-			FillRect(partVertical, 0xffff00ff);
+			FillRect(g, partHorizontal, 0xffff00ff);
+			FillRect(g, partVertical, 0xffff00ff);
 		}
 
-		void drawPenSize()
+		void drawPenSize(jgui::Graphics *g)
 		{
-			jgui::jregion_t size = { GetWidth() - BUTTON_SIZE, GetHeight() - BUTTON_SIZE - 1, 0, 0 };
+      jgui::jsize_t
+        wsize = GetSize();
+			jgui::jregion_t 
+        size = { wsize.width - BUTTON_SIZE, wsize.height - BUTTON_SIZE - 1, 0, 0 };
 
 			switch (_pen_size) {
 				case 1:
@@ -1247,20 +1259,20 @@ class Screen : public jgui::Widget {
 					break;
 			}
 
-			FillRect(size, 0xff000000);
+			FillRect(g, size, 0xff000000);
 		}
 
-		virtual bool KeyPressed(jgui::KeyEvent *event) 
+		virtual bool KeyPressed(jevent::KeyEvent *event) 
 		{
-			if (jgui::Widget::KeyPressed(event) == true) {
+			if (jgui::Window::KeyPressed(event) == true) {
 				return true;
 			}
 
-			jgui::jkeyevent_symbol_t s = event->GetSymbol();
+			jevent::jkeyevent_symbol_t s = event->GetSymbol();
 
-			if (s == jgui::JKS_ENTER) {
+			if (s == jevent::JKS_ENTER) {
 				Clear();
-			} else if (s == jgui::JKS_CURSOR_LEFT) {
+			} else if (s == jevent::JKS_CURSOR_LEFT) {
 				for (int i = BUTTON_COUNT; i--;) {
 					if (_current_particle == _buttons[i].particleType) {
 						if (i > 0) {
@@ -1272,7 +1284,7 @@ class Screen : public jgui::Widget {
 						break;
 					}
 				}
-			} else if (s == jgui::JKS_CURSOR_RIGHT) {
+			} else if (s == jevent::JKS_CURSOR_RIGHT) {
 				for (int i = BUTTON_COUNT; i--;) {
 					if (_current_particle == _buttons[i].particleType) {
 						if (i < BUTTON_COUNT - 1) {
@@ -1284,21 +1296,21 @@ class Screen : public jgui::Widget {
 						break;
 					}
 				}
-			} else if (s == jgui::JKS_CURSOR_UP) { // decrease pen size
+			} else if (s == jevent::JKS_CURSOR_UP) { // decrease pen size
 				_pen_size *= 2;
 				
 				if (_pen_size > 32) {
 					_pen_size = 32;
 				}
-			} else if (s == jgui::JKS_CURSOR_DOWN) { // increase pen size
+			} else if (s == jevent::JKS_CURSOR_DOWN) { // increase pen size
 				_pen_size /= 2;
 
 				if (_pen_size < 1) {
 					_pen_size = 1;
 				}
-			} else if (s == jgui::JKS_SPACE) {
+			} else if (s == jevent::JKS_SPACE) {
 				_current_particle = JPT_NOTHING;
-			} else if (s == jgui::JKS_TAB) {
+			} else if (s == jevent::JKS_TAB) {
 				_oil_density -= 0.05f;
 				_salt_density -= 0.05f;
 				_water_density -= 0.05f;
@@ -1319,7 +1331,7 @@ class Screen : public jgui::Widget {
 				if (_sand_density < 0.05f) {
 					_sand_density = 0.05f;
 				}
-			} else if (s == jgui::JKS_BACKSPACE) {
+			} else if (s == jevent::JKS_BACKSPACE) {
 				_oil_density += 0.05f;
 				_salt_density += 0.05f;
 				_water_density += 0.05f;
@@ -1342,154 +1354,162 @@ class Screen : public jgui::Widget {
 				}
 			}
 
-			jgui::jkeyevent_modifiers_t m = event->GetModifiers();
+      jgui::jsize_t
+        size = GetSize();
+			jevent::jkeyevent_modifiers_t 
+        m = event->GetModifiers();
 
-			if (m & jgui::JKM_CONTROL) { 
+			if (m & jevent::JKM_CONTROL) { 
 				_mb_x = _old_x;
 				_mb_y = _old_y;
 
-				if (_old_y < (GetHeight()-DASHBOARD_SIZE)) {
+				if (_old_y < (size.height-DASHBOARD_SIZE)) {
 					DrawLine(_old_x+_speed_x,_old_y+_speed_y,_old_x,_old_y);
 				}
 
 				_is_button_down = true;
-			} else if (m & jgui::JKM_ALTGR) { 
+			} else if (m & jevent::JKM_ALTGR) { 
 				_slow = true;
-			} else if (m & jgui::JKM_SHIFT) { 
+			} else if (m & jevent::JKM_SHIFT) { 
 				_emit_oil ^= true;
 				_emit_salt ^= true;
 				_emit_water ^= true;
 				_emit_sand ^= true;
 			}
 
-			if (s == jgui::JKS_0) { // eraser
+			if (s == jevent::JKS_0) { // eraser
 				_current_particle = JPT_NOTHING;
-			} else if (s == jgui::JKS_1) { // wall
+			} else if (s == jevent::JKS_1) { // wall
 				_current_particle = JPT_WALL;
-			} else if (s == jgui::JKS_2) { // water
+			} else if (s == jevent::JKS_2) { // water
 				_current_particle = JPT_WATER;
-			} else if (s == jgui::JKS_3) { // dirty
+			} else if (s == jevent::JKS_3) { // dirty
 				_current_particle = JPT_SAND;
-			} else if (s == jgui::JKS_4) { // salt
+			} else if (s == jevent::JKS_4) { // salt
 				_current_particle = JPT_SALT;
-			} else if (s == jgui::JKS_5) { // oil
+			} else if (s == jevent::JKS_5) { // oil
 				_current_particle = JPT_OIL;
-			} else if (s == jgui::JKS_6) { // acid
+			} else if (s == jevent::JKS_6) { // acid
 				_current_particle = JPT_ACID;
-			} else if (s == jgui::JKS_7) { // fire
+			} else if (s == jevent::JKS_7) { // fire
 				_current_particle = JPT_FIRE;
-			} else if (s == jgui::JKS_8) { // electricity
+			} else if (s == jevent::JKS_8) { // electricity
 				_current_particle = JPT_ELEC;
-			} else if (s == jgui::JKS_9) { // torch
+			} else if (s == jevent::JKS_9) { // torch
 				_current_particle = JPT_TORCH;
-			} else if (s == jgui::JKS_F1) { // mud
+			} else if (s == jevent::JKS_F1) { // mud
 				_current_particle = JPT_MUD;
-			} else if (s == jgui::JKS_F2) { // saltwater
+			} else if (s == jevent::JKS_F2) { // saltwater
 				_current_particle = JPT_SALTWATER;
-			} else if (s == jgui::JKS_F3) { // steam
+			} else if (s == jevent::JKS_F3) { // steam
 				_current_particle = JPT_STEAM;
-			} else if (s == jgui::JKS_F4) { // ice
+			} else if (s == jevent::JKS_F4) { // ice
 				_current_particle = JPT_ICE;
-			} else if (s == jgui::JKS_DELETE) { // clear screen
+			} else if (s == jevent::JKS_DELETE) { // clear screen
 				Clear();
-			} else if (s == jgui::JKS_v) { // enable or disable oil emitter
+			} else if (s == jevent::JKS_v) { // enable or disable oil emitter
 				_emit_oil ^= true;
-			} else if (s == jgui::JKS_r) { // increase oil emitter density
+			} else if (s == jevent::JKS_r) { // increase oil emitter density
 				_oil_density += 0.05f;
 
 				if (_oil_density > 1.0f) {
 					_oil_density = 1.0f;
 				}
-			} else if (s == jgui::JKS_f) { // decrease oil emitter density
+			} else if (s == jevent::JKS_f) { // decrease oil emitter density
 				_oil_density -= 0.05f;
 
 				if (_oil_density < 0.05f) {
 					_oil_density = 0.05f;
 				}
-			} else if (s == jgui::JKS_c) { // enable or disable salt emitter
+			} else if (s == jevent::JKS_c) { // enable or disable salt emitter
 				_emit_salt ^= true;
-			} else if (s == jgui::JKS_e) { // increase salt emitter density
+			} else if (s == jevent::JKS_e) { // increase salt emitter density
 				_salt_density += 0.05f;
 
 				if (_salt_density > 1.0f) {
 					_salt_density = 1.0f;
 				}
-			} else if (s == jgui::JKS_d) { // decrease salt emitter density
+			} else if (s == jevent::JKS_d) { // decrease salt emitter density
 				_salt_density -= 0.05f;
 
 				if (_salt_density < 0.05f) {
 					_salt_density = 0.05f;
 				}
-			} else if (s == jgui::JKS_z) { // enable or disable water emitter
+			} else if (s == jevent::JKS_z) { // enable or disable water emitter
 				_emit_water ^= true;
-			} else if (s == jgui::JKS_q) { // increase water emitter density
+			} else if (s == jevent::JKS_q) { // increase water emitter density
 				_water_density += 0.05f;
 
 				if (_water_density > 1.0f) {
 					_water_density = 1.0f;
 				}
-			} else if (s == jgui::JKS_a) { // decrease water emitter density
+			} else if (s == jevent::JKS_a) { // decrease water emitter density
 				_water_density -= 0.05f;
 
 				if (_water_density < 0.05f) {
 					_water_density = 0.05f;
 				}
-			} else if (s == jgui::JKS_x) { // enable or disable dirt emitter
+			} else if (s == jevent::JKS_x) { // enable or disable dirt emitter
 				_emit_sand ^= true;
-			} else if (s == jgui::JKS_w) { // increase dirt emitter density
+			} else if (s == jevent::JKS_w) { // increase dirt emitter density
 				_sand_density += 0.05f;
 
 				if (_sand_density > 1.0f) {
 					_sand_density = 1.0f;
 				}
-			} else if (s == jgui::JKS_s) { // decrease dirt emitter density
+			} else if (s == jevent::JKS_s) { // decrease dirt emitter density
 				_sand_density -= 0.05f;
 
 				if (_sand_density < 0.05f) {
 					_sand_density = 0.05f;
 				}
-			} else if (s == jgui::JKS_t) { // draw a bunch of random lines
+			} else if (s == jevent::JKS_t) { // draw a bunch of random lines
 				DoRandomLines(JPT_WALL);
-			} else if (s == jgui::JKS_y) { // erase a bunch of random lines
+			} else if (s == jevent::JKS_y) { // erase a bunch of random lines
 				DoRandomLines(JPT_NOTHING);
-			} else if (s == jgui::JKS_o) { // enable or disable particle swaps
+			} else if (s == jevent::JKS_o) { // enable or disable particle swaps
 				_implement_particle_swaps ^= true;
 			}
 
 			return true;
 		}
 
-		virtual bool KeyReleased(jgui::KeyEvent *event) 
+		virtual bool KeyReleased(jevent::KeyEvent *event) 
 		{
-			if (jgui::Widget::KeyReleased(event) == true) {
+			if (jgui::Window::KeyReleased(event) == true) {
 				return true;
 			}
 
-			jgui::jkeyevent_modifiers_t m = event->GetModifiers();
+			jevent::jkeyevent_modifiers_t m = event->GetModifiers();
 
-			if ((m & jgui::JKM_CONTROL) == 0) { 
+			if ((m & jevent::JKM_CONTROL) == 0) { 
 				_mb_x = 0;
 				_mb_y = 0;
 				_is_button_down = false;
-			} else if ((m & jgui::JKM_ALT) == 0) { 
+			} else if ((m & jevent::JKM_ALT) == 0) { 
 				_slow = false;
 			}
 
 			return true;
 		}
 
-		virtual bool MousePressed(jgui::MouseEvent *event)
+		virtual bool MousePressed(jevent::MouseEvent *event)
 		{
-			if (jgui::Widget::MousePressed(event) == true) {
+			if (jgui::Window::MousePressed(event) == true) {
 				return true;
 			}
 
-			_old_x = event->GetX();
-			_old_y = event->GetY();
-			_mb_x = event->GetX();
-			_mb_y = event->GetY();
+      jgui::jpoint_t
+        location = event->GetLocation();
+      jgui::jsize_t
+        size = GetSize();
 
-			if (_mb_x < (GetHeight()-DASHBOARD_SIZE)) {
+			_old_x = location.x;
+			_old_y = location.y;
+			_mb_x = location.x;
+			_mb_y = location.y;
+
+			if (_mb_x < (size.height-DASHBOARD_SIZE)) {
 				DrawLine(_mb_x, _mb_y, _old_x, _old_y);
 			}
 
@@ -1498,14 +1518,19 @@ class Screen : public jgui::Widget {
 			return true;
 		}
 
-		virtual bool MouseReleased(jgui::MouseEvent *event)
+		virtual bool MouseReleased(jevent::MouseEvent *event)
 		{
-			if (jgui::Widget::MouseReleased(event) == true) {
+			if (jgui::Window::MouseReleased(event) == true) {
 				return true;
 			}
 
-			if (_old_y < (GetHeight()-DASHBOARD_SIZE)) {
-				DrawLine(event->GetX(), event->GetY(), _old_x, _old_y);
+      jgui::jpoint_t
+        location = event->GetLocation();
+      jgui::jsize_t
+        size = GetSize();
+
+			if (_old_y < (size.height-DASHBOARD_SIZE)) {
+				DrawLine(location.x, location.y, _old_x, _old_y);
 			}
 
 			_mb_x = 0;
@@ -1515,20 +1540,25 @@ class Screen : public jgui::Widget {
 			return true;
 		}
 
-		virtual bool MouseMoved(jgui::MouseEvent *event)
+		virtual bool MouseMoved(jevent::MouseEvent *event)
 		{
-			if (jgui::Widget::MouseMoved(event) == true) {
+			if (jgui::Window::MouseMoved(event) == true) {
 				return true;
 			}
 
+      jgui::jpoint_t
+        location = event->GetLocation();
+      jgui::jsize_t
+        size = GetSize();
+
 			if (_is_button_down == true) {
-				DrawLine(event->GetX(), event->GetY(), _old_x, _old_y);
+				DrawLine(location.x, location.y, _old_x, _old_y);
 			}
 
-			_old_x = event->GetX();
-			_old_y = event->GetY();
+			_old_x = location.x;
+			_old_y = location.y;
 
-			if (_mb_y > GetHeight()-DASHBOARD_SIZE) {
+			if (_mb_y > size.height-DASHBOARD_SIZE) {
 				CheckGuiInteraction(_mb_x, _mb_y);
 			}
 
@@ -1537,7 +1567,10 @@ class Screen : public jgui::Widget {
 
 		virtual void Paint(jgui::Graphics *g) 
 		{
-			jgui::Widget::Paint(g);
+			jgui::Window::Paint(g);
+
+      jgui::jsize_t
+        size = GetSize();
 
 			if (_slow) {
 				if (_speed_x > 0) {
@@ -1558,47 +1591,47 @@ class Screen : public jgui::Widget {
 
 			if (_old_x < 0) {
 				_old_x = 0;
-			} else if (_old_x > GetWidth()) {
-				_old_x = GetWidth();
+			} else if (_old_x > size.width) {
+				_old_x = size.width;
 			}
 
 			if (_old_y < 0) {
 				_old_y = 0;
-			} else if (_old_y > GetHeight()) {
-				_old_y = GetHeight();
+			} else if (_old_y > size.height) {
+				_old_y = size.height;
 			}
 
 			//To emit or not to emit
 			if (_emit_water) {
-				Emit((GetWidth()/2 - ((GetWidth()/6)*2)), 20, JPT_WATER, _water_density);
+				Emit((size.width/2 - ((size.width/6)*2)), 20, JPT_WATER, _water_density);
 			}
 
 			if (_emit_sand) {
-				Emit((GetWidth()/2 - (GetWidth()/6)), 20, JPT_SAND, _sand_density);
+				Emit((size.width/2 - (size.width/6)), 20, JPT_SAND, _sand_density);
 			}
 
 			if (_emit_salt) {
-				Emit((GetWidth()/2 + (GetWidth()/6)), 20, JPT_SALT, _salt_density);
+				Emit((size.width/2 + (size.width/6)), 20, JPT_SALT, _salt_density);
 			}
 
 			if (_emit_oil) {
-				Emit((GetWidth()/2 + ((GetWidth()/6)*2)), 20, JPT_OIL, _oil_density);
+				Emit((size.width/2 + ((size.width/6)*2)), 20, JPT_OIL, _oil_density);
 			}
 
 			//If the button is pressed (and no event has occured since last frame due
 			// to the polling procedure, then draw at the position (enabeling 'dynamic emitters')
-			if (_is_button_down) {
-				DrawLine(_old_x,_old_y,_old_x,_old_y);
+			if (_is_button_down == true) {
+				DrawLine(_old_x, _old_y, _old_x, _old_y);
 			}
 
 			//Clear bottom line
-			for (int i=0; i< GetWidth(); i++) {
-				_vs[i+((GetHeight()-DASHBOARD_SIZE-1)*GetWidth())] = JPT_NOTHING;
+			for (int i=0; i<size.width; i++) {
+				_vs[i + ((size.height - DASHBOARD_SIZE - 1)*size.width)] = JPT_NOTHING;
 			}
 
 			//Clear top line
-			for (int i=0; i< GetWidth(); i++) {
-				_vs[i+((0)*GetWidth())] = JPT_NOTHING;
+			for (int i=0; i<size.width; i++) {
+				_vs[i+((0)*size.width)] = JPT_NOTHING;
 			}
 
 			// Update the virtual screen (performing particle logic)
@@ -1607,9 +1640,9 @@ class Screen : public jgui::Widget {
 			// Map the virtual screen to the real screen
 			_particle_count = 0;
 
-			for (int y=GetHeight()-DASHBOARD_SIZE;y--;) {
-				for (int x=GetWidth();x--;) {
-					int index = x+(GetWidth()*y);
+			for (int y=size.height-DASHBOARD_SIZE; y--;) {
+				for (int x=size.width; x--;) {
+					int index = x + (size.width*y);
 					jparticle_type_t same = _vs[index];
 
 					if (same != JPT_NOTHING) {
@@ -1629,43 +1662,64 @@ class Screen : public jgui::Widget {
 			}
 
 			// Update dashboard
-			jgui::jregion_t dashboard ;
+			jgui::jregion_t dashboard;
+
 			dashboard.x = 0;
-			dashboard.y = GetHeight()-DASHBOARD_SIZE;
-			dashboard.width = GetWidth();
+			dashboard.y = size.height - DASHBOARD_SIZE;
+			dashboard.width = size.width;
 			dashboard.height = DASHBOARD_SIZE;
-			FillRect(dashboard, 0xff9b9b9b);
 
-			InitButtons();
-			drawSelection();
-			drawPenSize();
-			drawCursor(_old_x, _old_y);
+			FillRect(g, dashboard, 0xff9b9b9b);
+
+			FillRect(g, _buttons[0].rect, colors[JPT_WATER]);
+			FillRect(g, _buttons[1].rect, colors[JPT_SAND]);
+			FillRect(g, _buttons[2].rect, colors[JPT_SALT]);
+			FillRect(g, _buttons[3].rect, colors[JPT_OIL]);
+			FillRect(g, _buttons[4].rect, colors[JPT_FIRE]);
+			FillRect(g, _buttons[5].rect, colors[JPT_ACID]);
+			FillRect(g, _buttons[6].rect, colors[JPT_DIRT]);
+			FillRect(g, _buttons[7].rect, colors[JPT_WATERSPOUT]);
+			FillRect(g, _buttons[8].rect, colors[JPT_SANDSPOUT]);
+			FillRect(g, _buttons[9].rect, colors[JPT_SALTSPOUT]);
+			FillRect(g, _buttons[10].rect, colors[JPT_OILSPOUT]);
+			FillRect(g, _buttons[11].rect, colors[JPT_WALL]);
+			FillRect(g, _buttons[12].rect, colors[JPT_TORCH]);
+			FillRect(g, _buttons[13].rect, colors[JPT_STOVE]);
+			FillRect(g, _buttons[14].rect, colors[JPT_PLANT]);
+			FillRect(g, _buttons[15].rect, colors[JPT_ICE]);
+			FillRect(g, _buttons[16].rect, colors[JPT_IRONWALL]);
+			FillRect(g, _buttons[17].rect, colors[JPT_VOID]);
+			FillRect(g, _buttons[18].rect, 0);
+
+			drawSelection(g);
+			drawPenSize(g);
+			drawCursor(g, _old_x, _old_y);
 		}
 
-		jgui::Graphics * GetGraphics()
-		{
-			return jgui::Application::GetInstance()->GetGraphics();
-		}
+		virtual void ShowApp() 
+    {
+      do {
+        Repaint();
+        
+        std::this_thread::sleep_for(std::chrono::milliseconds(10));
+      } while (IsHidden() == false);
+    }
 
 };
 
 int main(int argc, char **argv)
 {
-	jgui::Application *main = jgui::Application::GetInstance();
-
-	srand(time(NULL));
+	jgui::Application::Init(argc, argv);
 
 	Screen app;
 
-	main->Add(&app);
-	main->SetSize(app.GetWidth(), app.GetHeight());
-	main->SetVisible(true);
+	srand(time(NULL));
 
-	do {
-		app.Repaint();
-	} while (app.IsHidden() == false);
+	app.SetTitle("Ball Drop");
+	app.SetVisible(true);
+  app.Exec();
 
-	main->WaitForExit();
+	jgui::Application::Loop();
 
 	return 0;
 }
