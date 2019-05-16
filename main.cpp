@@ -77,7 +77,7 @@ enum jparticle_type_t {
 
 // Button rectangle struct
 typedef struct {
-	jgui::jregion_t rect;
+	jgui::jregion_t<int> rect;
 	jparticle_type_t particleType;
 } jbutton_rect_t;
 
@@ -86,7 +86,7 @@ class Screen : public jgui::Window {
 	private:
 		jparticle_type_t *_vs;
 		jparticle_type_t _current_particle;
-		jgui::jregion_t _scene;
+		jgui::jregion_t<int> _scene;
 		jbutton_rect_t _buttons[BUTTON_COUNT];
 		float _water_density;
 		float _sand_density;
@@ -117,7 +117,7 @@ class Screen : public jgui::Window {
 		Screen():
 			jgui::Window(0, 0, 720, 480)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			_vs = new jparticle_type_t[size.width*size.height];
@@ -230,7 +230,7 @@ class Screen : public jgui::Window {
 		// at a given position withing the width)
 		void Emit(int x, int width, jparticle_type_t type, float p)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			for (int i=x-width/2; i<x+width/2; i++) {
@@ -242,7 +242,7 @@ class Screen : public jgui::Window {
 
 		void StillbornParticleLogic(int x,int y,jparticle_type_t type)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 			int 
         index, 
@@ -440,7 +440,7 @@ class Screen : public jgui::Window {
 		// will be MOVEDSAND
 		inline void MoveParticle(int x, int y, jparticle_type_t type)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			type = (jparticle_type_t)(type+1);
@@ -757,7 +757,7 @@ class Screen : public jgui::Window {
 		//Drawing a filled circle at a given position with a given radius and a given partice type
 		void DrawParticles(int xpos, int ypos, int radius, jparticle_type_t type)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			for (int x=((xpos-radius-1) < 0)?0:(xpos-radius-1); x<=xpos+radius && x<size.width; x++) {
@@ -784,7 +784,7 @@ class Screen : public jgui::Window {
 
 		void DoRandomLines(jparticle_type_t type)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 			jparticle_type_t 
         tmp = _current_particle;
@@ -810,7 +810,7 @@ class Screen : public jgui::Window {
 
 		inline void UpdateVirtualPixel(int x, int y)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 			jparticle_type_t 
         same = _vs[x + (size.width*y)];
@@ -829,7 +829,7 @@ class Screen : public jgui::Window {
 		// Updating the particle system (virtual screen) pixel by pixel
 		inline void UpdateVirtualScreen()
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			for (int y =0; y<size.height-DASHBOARD_SIZE; y++) {
@@ -850,7 +850,7 @@ class Screen : public jgui::Window {
 		//Cearing the particle system
 		void Clear()
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			for (int w=0; w<size.width ; w++) {
@@ -860,22 +860,22 @@ class Screen : public jgui::Window {
 			}
 		}
 
-		void DrawRect(jgui::Graphics *g, jgui::jregion_t bounds, uint32_t color)
+		void DrawRect(jgui::Graphics *g, jgui::jregion_t<int> bounds, uint32_t color)
 		{
 			g->SetColor(color);
-			g->DrawRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+			g->DrawRectangle({bounds.x, bounds.y, bounds.width, bounds.height});
 		}
 
-		void FillRect(jgui::Graphics *g, jgui::jregion_t bounds, uint32_t color)
+		void FillRect(jgui::Graphics *g, jgui::jregion_t<int> bounds, uint32_t color)
 		{
 			g->SetColor(color);
-			g->FillRectangle(bounds.x, bounds.y, bounds.width, bounds.height);
+			g->FillRectangle({bounds.x, bounds.y, bounds.width, bounds.height});
 		}
 
 		void InitButtons()
 		{
 			// set up water emit button
-			jgui::jregion_t wateroutput;
+			jgui::jregion_t<int> wateroutput;
 			wateroutput.x = 0*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			wateroutput.y = _upper_row_y;
 			wateroutput.width = BUTTON_SIZE;
@@ -886,7 +886,7 @@ class Screen : public jgui::Window {
 			_buttons[0] = warect;
 
 			// set up sand sand button
-			jgui::jregion_t sandoutput;
+			jgui::jregion_t<int> sandoutput;
 			sandoutput.x = 1*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			sandoutput.y = _upper_row_y;
 			sandoutput.width = BUTTON_SIZE;
@@ -897,7 +897,7 @@ class Screen : public jgui::Window {
 			_buttons[1] = sanrect;
 
 			// set up salt emit button
-			jgui::jregion_t saltoutput;
+			jgui::jregion_t<int> saltoutput;
 			saltoutput.x = 2*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			saltoutput.y = _upper_row_y;
 			saltoutput.width = BUTTON_SIZE;
@@ -908,7 +908,7 @@ class Screen : public jgui::Window {
 			_buttons[2] = sarect;
 
 			// set up oil button
-			jgui::jregion_t oiloutput;
+			jgui::jregion_t<int> oiloutput;
 			oiloutput.x = 3*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			oiloutput.y = _upper_row_y;
 			oiloutput.width = BUTTON_SIZE;
@@ -919,7 +919,7 @@ class Screen : public jgui::Window {
 			_buttons[3] = oirect;
 
 			// set up fire button
-			jgui::jregion_t fire;
+			jgui::jregion_t<int> fire;
 			fire.x = 4*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			fire.y = _upper_row_y;
 			fire.width = BUTTON_SIZE;
@@ -930,7 +930,7 @@ class Screen : public jgui::Window {
 			_buttons[4] = firect;
 
 			// set up acid button
-			jgui::jregion_t acid;
+			jgui::jregion_t<int> acid;
 			acid.x = 5*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			acid.y = _upper_row_y;
 			acid.width = BUTTON_SIZE;
@@ -941,7 +941,7 @@ class Screen : public jgui::Window {
 			_buttons[5] = acrect;
 
 			// set up dirt emit button
-			jgui::jregion_t dirtoutput;
+			jgui::jregion_t<int> dirtoutput;
 			dirtoutput.x = 6*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
 			dirtoutput.y = _upper_row_y;
 			dirtoutput.width = BUTTON_SIZE;
@@ -952,7 +952,7 @@ class Screen : public jgui::Window {
 			_buttons[6] = direct;
 
 			// set up spout water
-			jgui::jregion_t spwater;
+			jgui::jregion_t<int> spwater;
 			spwater.x = 7*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
 			spwater.y = _middle_row_y;
 			spwater.width = BUTTON_SIZE;
@@ -963,7 +963,7 @@ class Screen : public jgui::Window {
 			_buttons[7] = spwrect;
 
 			// set up spout sand
-			jgui::jregion_t spdirt;
+			jgui::jregion_t<int> spdirt;
 			spdirt.x = 8*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
 			spdirt.y = _middle_row_y;
 			spdirt.width = BUTTON_SIZE;
@@ -974,7 +974,7 @@ class Screen : public jgui::Window {
 			_buttons[8] = spdrect;
 
 			// set up spout salt
-			jgui::jregion_t spsalt;
+			jgui::jregion_t<int> spsalt;
 			spsalt.x = 9*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
 			spsalt.y = _middle_row_y;
 			spsalt.width = BUTTON_SIZE;
@@ -985,7 +985,7 @@ class Screen : public jgui::Window {
 			_buttons[9] = spsrect;
 
 			// set up spout oil
-			jgui::jregion_t spoil;
+			jgui::jregion_t<int> spoil;
 			spoil.x = 10*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
 			spoil.y = _middle_row_y;
 			spoil.width = BUTTON_SIZE;
@@ -996,7 +996,7 @@ class Screen : public jgui::Window {
 			_buttons[10] = sporect;
 
 			// set up wall button
-			jgui::jregion_t wall;
+			jgui::jregion_t<int> wall;
 			wall.x = 11*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			wall.y = _lower_row_y;
 			wall.width = BUTTON_SIZE;
@@ -1007,7 +1007,7 @@ class Screen : public jgui::Window {
 			_buttons[11] = walrect;
 
 			// set up torch button
-			jgui::jregion_t torch;
+			jgui::jregion_t<int> torch;
 			torch.x = 12*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			torch.y = _lower_row_y;
 			torch.width = BUTTON_SIZE;
@@ -1018,7 +1018,7 @@ class Screen : public jgui::Window {
 			_buttons[12] = torect;
 
 			// set up stove button
-			jgui::jregion_t stove;
+			jgui::jregion_t<int> stove;
 			stove.x = 13*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			stove.y = _lower_row_y;
 			stove.width = BUTTON_SIZE;
@@ -1029,7 +1029,7 @@ class Screen : public jgui::Window {
 			_buttons[13] = storect;
 
 			// set up plant button
-			jgui::jregion_t plant;
+			jgui::jregion_t<int> plant;
 			plant.x = 14*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			plant.y = _lower_row_y;
 			plant.width = BUTTON_SIZE;
@@ -1040,7 +1040,7 @@ class Screen : public jgui::Window {
 			_buttons[14] = prect;
 
 			// ice
-			jgui::jregion_t ice;
+			jgui::jregion_t<int> ice;
 			ice.x = 15*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			ice.y = _lower_row_y;
 			ice.width = BUTTON_SIZE;
@@ -1051,7 +1051,7 @@ class Screen : public jgui::Window {
 			_buttons[15] = irect;
 
 			// ironwall
-			jgui::jregion_t iw;
+			jgui::jregion_t<int> iw;
 			iw.x = 16*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			iw.y = _lower_row_y;
 			iw.width = BUTTON_SIZE;
@@ -1062,7 +1062,7 @@ class Screen : public jgui::Window {
 			_buttons[16] = iwrect;
 
 			// void
-			jgui::jregion_t voidele;
+			jgui::jregion_t<int> voidele;
 			voidele.x = 17*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
 			voidele.y = _lower_row_y;
 			voidele.width = BUTTON_SIZE;
@@ -1073,7 +1073,7 @@ class Screen : public jgui::Window {
 			_buttons[17] = voidelerect;
 
 			// eraser
-			jgui::jregion_t eraser;
+			jgui::jregion_t<int> eraser;
 			eraser.x = 18*(BUTTON_SIZE + BUTTON_GAP) + 6*BUTTON_GAP + BUTTON_GAP;
 			eraser.y = _lower_row_y;
 			eraser.width = BUTTON_SIZE;
@@ -1087,7 +1087,7 @@ class Screen : public jgui::Window {
 		// Initializing the screen
 		void init()
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			initColors();
@@ -1098,7 +1098,7 @@ class Screen : public jgui::Window {
 			_scene.height = size.height - DASHBOARD_SIZE;
 
 			//set up dashboard
-			jgui::jregion_t dashboard ;
+			jgui::jregion_t<int> dashboard ;
 
 			dashboard.x = 0;
 			dashboard.y = size.height - DASHBOARD_SIZE;
@@ -1200,7 +1200,7 @@ class Screen : public jgui::Window {
 
 		void drawSelection(jgui::Graphics *g)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			for (int i=BUTTON_COUNT; i--;) {
@@ -1209,15 +1209,15 @@ class Screen : public jgui::Window {
 				if (_current_particle == button.particleType) {
 					DrawRect(g, button.rect, 0xff000000);
 
-					g->DrawString(GetParticleName(_current_particle), 0, button.rect.y, size.width - BUTTON_GAP, button.rect.height, jgui::JHA_RIGHT);
+					g->DrawString(GetParticleName(_current_particle), {0, button.rect.y, size.width - BUTTON_GAP, button.rect.height}, jgui::JHA_RIGHT);
 				}
 			}
 		}
 
 		void drawCursor(jgui::Graphics *g, int x, int y)
 		{
-			jgui::jregion_t partHorizontal = { x+1, y+1, 4, 1 };
-			jgui::jregion_t partVertical = { x+1, y+1, 1, 4 };
+			jgui::jregion_t<int> partHorizontal = { x+1, y+1, 4, 1 };
+			jgui::jregion_t<int> partVertical = { x+1, y+1, 1, 4 };
 
 			FillRect(g, partHorizontal, 0xffff00ff);
 			FillRect(g, partVertical, 0xffff00ff);
@@ -1225,9 +1225,9 @@ class Screen : public jgui::Window {
 
 		void drawPenSize(jgui::Graphics *g)
 		{
-      jgui::jsize_t
+      jgui::jsize_t<int>
         wsize = GetSize();
-			jgui::jregion_t 
+			jgui::jregion_t<int> 
         size = { wsize.width - BUTTON_SIZE, wsize.height - BUTTON_SIZE - 1, 0, 0 };
 
 			switch (_pen_size) {
@@ -1354,7 +1354,7 @@ class Screen : public jgui::Window {
 				}
 			}
 
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 			jevent::jkeyevent_modifiers_t 
         m = event->GetModifiers();
@@ -1499,9 +1499,9 @@ class Screen : public jgui::Window {
 				return true;
 			}
 
-      jgui::jpoint_t
+      jgui::jpoint_t<int>
         location = event->GetLocation();
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			_old_x = location.x;
@@ -1524,9 +1524,9 @@ class Screen : public jgui::Window {
 				return true;
 			}
 
-      jgui::jpoint_t
+      jgui::jpoint_t<int>
         location = event->GetLocation();
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			if (_old_y < (size.height-DASHBOARD_SIZE)) {
@@ -1546,9 +1546,9 @@ class Screen : public jgui::Window {
 				return true;
 			}
 
-      jgui::jpoint_t
+      jgui::jpoint_t<int>
         location = event->GetLocation();
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			if (_is_button_down == true) {
@@ -1569,7 +1569,7 @@ class Screen : public jgui::Window {
 		{
 			jgui::Window::Paint(g);
 
-      jgui::jsize_t
+      jgui::jsize_t<int>
         size = GetSize();
 
 			if (_slow) {
@@ -1647,14 +1647,14 @@ class Screen : public jgui::Window {
 
 					if (same != JPT_NOTHING) {
 						if (IsStillborn(same)) {
-							g->SetRGB(colors[same], x, y);
+							g->SetRGB(colors[same], {x, y});
 						} else {
 							_particle_count++;
 							if (same % 2 == 1) { // Moved 
-								g->SetRGB(colors[(same-1)], x, y);
+								g->SetRGB(colors[(same-1)], {x, y});
 								_vs[index] = (jparticle_type_t)(same-1); // Set it to not moved
 							} else { // Not moved
-								g->SetRGB(colors[same], x, y);
+								g->SetRGB(colors[same], {x, y});
 							}
 						}
 					}
@@ -1662,7 +1662,7 @@ class Screen : public jgui::Window {
 			}
 
 			// Update dashboard
-			jgui::jregion_t dashboard;
+			jgui::jregion_t<int> dashboard;
 
 			dashboard.x = 0;
 			dashboard.y = size.height - DASHBOARD_SIZE;
