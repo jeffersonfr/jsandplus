@@ -77,7 +77,7 @@ enum jparticle_type_t {
 
 // Button rectangle struct
 typedef struct {
-	jgui::jregion_t<int> rect;
+	jgui::jrect_t<int> rect;
 	jparticle_type_t particleType;
 } jbutton_rect_t;
 
@@ -86,7 +86,7 @@ class Screen : public jgui::Window {
 	private:
 		jparticle_type_t *_vs;
 		jparticle_type_t _current_particle;
-		jgui::jregion_t<int> _scene;
+		jgui::jrect_t<int> _scene;
 		jbutton_rect_t _buttons[BUTTON_COUNT];
 		float _water_density;
 		float _sand_density;
@@ -860,224 +860,262 @@ class Screen : public jgui::Window {
 			}
 		}
 
-		void DrawRect(jgui::Graphics *g, jgui::jregion_t<int> bounds, uint32_t color)
+		void DrawRect(jgui::Graphics *g, jgui::jrect_t<int> bounds, uint32_t color)
 		{
 			g->SetColor(color);
-			g->DrawRectangle({bounds.x, bounds.y, bounds.width, bounds.height});
+			g->DrawRectangle(bounds);
 		}
 
-		void FillRect(jgui::Graphics *g, jgui::jregion_t<int> bounds, uint32_t color)
+		void FillRect(jgui::Graphics *g, jgui::jrect_t<int> bounds, uint32_t color)
 		{
 			g->SetColor(color);
-			g->FillRectangle({bounds.x, bounds.y, bounds.width, bounds.height});
+			g->FillRectangle(bounds);
 		}
 
 		void InitButtons()
 		{
 			// set up water emit button
-			jgui::jregion_t<int> wateroutput;
-			wateroutput.x = 0*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			wateroutput.y = _upper_row_y;
-			wateroutput.width = BUTTON_SIZE;
-			wateroutput.height = BUTTON_SIZE;
+			jgui::jrect_t<int> wateroutput;
+			wateroutput.point = {
+        0*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			wateroutput.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t warect;
 			warect.rect = wateroutput;
 			warect.particleType = JPT_WATER;
 			_buttons[0] = warect;
 
 			// set up sand sand button
-			jgui::jregion_t<int> sandoutput;
-			sandoutput.x = 1*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			sandoutput.y = _upper_row_y;
-			sandoutput.width = BUTTON_SIZE;
-			sandoutput.height = BUTTON_SIZE;
+			jgui::jrect_t<int> sandoutput;
+			sandoutput.point = {
+        1*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			sandoutput.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t sanrect;
 			sanrect.rect = sandoutput;
 			sanrect.particleType = JPT_SAND;
 			_buttons[1] = sanrect;
 
 			// set up salt emit button
-			jgui::jregion_t<int> saltoutput;
-			saltoutput.x = 2*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			saltoutput.y = _upper_row_y;
-			saltoutput.width = BUTTON_SIZE;
-			saltoutput.height = BUTTON_SIZE;
+			jgui::jrect_t<int> saltoutput;
+			saltoutput.point = {
+        2*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			saltoutput.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t sarect;
 			sarect.rect = saltoutput;
 			sarect.particleType = JPT_SALT;
 			_buttons[2] = sarect;
 
 			// set up oil button
-			jgui::jregion_t<int> oiloutput;
-			oiloutput.x = 3*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			oiloutput.y = _upper_row_y;
-			oiloutput.width = BUTTON_SIZE;
-			oiloutput.height = BUTTON_SIZE;
+			jgui::jrect_t<int> oiloutput;
+			oiloutput.point = {
+        3*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			oiloutput.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t oirect;
 			oirect.rect = oiloutput;
 			oirect.particleType = JPT_OIL;
 			_buttons[3] = oirect;
 
 			// set up fire button
-			jgui::jregion_t<int> fire;
-			fire.x = 4*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			fire.y = _upper_row_y;
-			fire.width = BUTTON_SIZE;
-			fire.height = BUTTON_SIZE;
+			jgui::jrect_t<int> fire;
+			fire.point = {
+        4*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			fire.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t firect;
 			firect.particleType = JPT_FIRE;
 			firect.rect = fire;
 			_buttons[4] = firect;
 
 			// set up acid button
-			jgui::jregion_t<int> acid;
-			acid.x = 5*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			acid.y = _upper_row_y;
-			acid.width = BUTTON_SIZE;
-			acid.height = BUTTON_SIZE;
+			jgui::jrect_t<int> acid;
+			acid.point = {
+        5*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			acid.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t acrect;
 			acrect.particleType = JPT_ACID;
 			acrect.rect = acid;
 			_buttons[5] = acrect;
 
 			// set up dirt emit button
-			jgui::jregion_t<int> dirtoutput;
-			dirtoutput.x = 6*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP;
-			dirtoutput.y = _upper_row_y;
-			dirtoutput.width = BUTTON_SIZE;
-			dirtoutput.height = BUTTON_SIZE;
+			jgui::jrect_t<int> dirtoutput;
+			dirtoutput.point = {
+        6*(BUTTON_SIZE + BUTTON_GAP) + BUTTON_GAP, _upper_row_y
+      };
+			dirtoutput.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t direct;
 			direct.rect = dirtoutput;
 			direct.particleType = JPT_DIRT;
 			_buttons[6] = direct;
 
 			// set up spout water
-			jgui::jregion_t<int> spwater;
-			spwater.x = 7*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
-			spwater.y = _middle_row_y;
-			spwater.width = BUTTON_SIZE;
-			spwater.height = BUTTON_SIZE;
+			jgui::jrect_t<int> spwater;
+			spwater.point = {
+        7*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP, _middle_row_y
+      };
+			spwater.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t spwrect;
 			spwrect.particleType = JPT_WATERSPOUT;
 			spwrect.rect = spwater;
 			_buttons[7] = spwrect;
 
 			// set up spout sand
-			jgui::jregion_t<int> spdirt;
-			spdirt.x = 8*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
-			spdirt.y = _middle_row_y;
-			spdirt.width = BUTTON_SIZE;
-			spdirt.height = BUTTON_SIZE;
+			jgui::jrect_t<int> spdirt;
+			spdirt.point = {
+        8*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP, _middle_row_y
+      };
+			spdirt.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t spdrect;
 			spdrect.particleType = JPT_SANDSPOUT;
 			spdrect.rect = spdirt;
 			_buttons[8] = spdrect;
 
 			// set up spout salt
-			jgui::jregion_t<int> spsalt;
-			spsalt.x = 9*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
-			spsalt.y = _middle_row_y;
-			spsalt.width = BUTTON_SIZE;
-			spsalt.height = BUTTON_SIZE;
+			jgui::jrect_t<int> spsalt;
+			spsalt.point = {
+        9*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP, _middle_row_y
+      };
+			spsalt.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t spsrect;
 			spsrect.particleType = JPT_SALTSPOUT;
 			spsrect.rect = spsalt;
 			_buttons[9] = spsrect;
 
 			// set up spout oil
-			jgui::jregion_t<int> spoil;
-			spoil.x = 10*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP;
-			spoil.y = _middle_row_y;
-			spoil.width = BUTTON_SIZE;
-			spoil.height = BUTTON_SIZE;
+			jgui::jrect_t<int> spoil;
+			spoil.point = {
+        10*(BUTTON_SIZE + BUTTON_GAP) + 2*BUTTON_GAP + BUTTON_GAP, _middle_row_y
+      };
+			spoil.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t sporect;
 			sporect.particleType = JPT_OILSPOUT;
 			sporect.rect = spoil;
 			_buttons[10] = sporect;
 
 			// set up wall button
-			jgui::jregion_t<int> wall;
-			wall.x = 11*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			wall.y = _lower_row_y;
-			wall.width = BUTTON_SIZE;
-			wall.height = BUTTON_SIZE;
+			jgui::jrect_t<int> wall;
+			wall.point = {
+        11*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			wall.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t walrect;
 			walrect.particleType = JPT_WALL;
 			walrect.rect = wall;
 			_buttons[11] = walrect;
 
 			// set up torch button
-			jgui::jregion_t<int> torch;
-			torch.x = 12*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			torch.y = _lower_row_y;
-			torch.width = BUTTON_SIZE;
-			torch.height = BUTTON_SIZE;
+			jgui::jrect_t<int> torch;
+			torch.point = {
+        12*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			torch.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t torect;
 			torect.particleType = JPT_TORCH;
 			torect.rect = torch;
 			_buttons[12] = torect;
 
 			// set up stove button
-			jgui::jregion_t<int> stove;
-			stove.x = 13*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			stove.y = _lower_row_y;
-			stove.width = BUTTON_SIZE;
-			stove.height = BUTTON_SIZE;
+			jgui::jrect_t<int> stove;
+			stove.point = {
+        13*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			stove.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t storect;
 			storect.particleType = JPT_STOVE;
 			storect.rect = stove;
 			_buttons[13] = storect;
 
 			// set up plant button
-			jgui::jregion_t<int> plant;
-			plant.x = 14*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			plant.y = _lower_row_y;
-			plant.width = BUTTON_SIZE;
-			plant.height = BUTTON_SIZE;
+			jgui::jrect_t<int> plant;
+			plant.point = {
+        14*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			plant.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t prect;
 			prect.particleType = JPT_PLANT;
 			prect.rect = plant;
 			_buttons[14] = prect;
 
 			// ice
-			jgui::jregion_t<int> ice;
-			ice.x = 15*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			ice.y = _lower_row_y;
-			ice.width = BUTTON_SIZE;
-			ice.height = BUTTON_SIZE;
+			jgui::jrect_t<int> ice;
+			ice.point = {
+        15*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			ice.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t irect;
 			irect.particleType = JPT_ICE;
 			irect.rect = ice;
 			_buttons[15] = irect;
 
 			// ironwall
-			jgui::jregion_t<int> iw;
-			iw.x = 16*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			iw.y = _lower_row_y;
-			iw.width = BUTTON_SIZE;
-			iw.height = BUTTON_SIZE;
+			jgui::jrect_t<int> iw;
+			iw.point = {
+        16*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			iw.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t iwrect;
 			iwrect.particleType = JPT_IRONWALL;
 			iwrect.rect = iw;
 			_buttons[16] = iwrect;
 
 			// void
-			jgui::jregion_t<int> voidele;
-			voidele.x = 17*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP;
-			voidele.y = _lower_row_y;
-			voidele.width = BUTTON_SIZE;
-			voidele.height = BUTTON_SIZE;
+			jgui::jrect_t<int> voidele;
+			voidele.point = {
+        17*(BUTTON_SIZE + BUTTON_GAP) + 4*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			voidele.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t voidelerect;
 			voidelerect.particleType = JPT_VOID;
 			voidelerect.rect = voidele;
 			_buttons[17] = voidelerect;
 
 			// eraser
-			jgui::jregion_t<int> eraser;
-			eraser.x = 18*(BUTTON_SIZE + BUTTON_GAP) + 6*BUTTON_GAP + BUTTON_GAP;
-			eraser.y = _lower_row_y;
-			eraser.width = BUTTON_SIZE;
-			eraser.height = BUTTON_SIZE;
+			jgui::jrect_t<int> eraser;
+			eraser.point = {
+        18*(BUTTON_SIZE + BUTTON_GAP) + 6*BUTTON_GAP + BUTTON_GAP, _lower_row_y
+      };
+			eraser.size = {
+        BUTTON_SIZE, BUTTON_SIZE
+      };
 			jbutton_rect_t eraserrect;
 			eraserrect.particleType = JPT_NOTHING;
 			eraserrect.rect = eraser;
@@ -1092,18 +1130,30 @@ class Screen : public jgui::Window {
 
 			initColors();
 
-			_scene.x = 0;
-			_scene.y = 0;
-			_scene.width = size.width;
-			_scene.height = size.height - DASHBOARD_SIZE;
+			_scene = {
+        .point = {
+          .x = 0,
+			    .y = 0
+        },
+        .size = {
+			    .width = size.width,
+			    .height = size.height - DASHBOARD_SIZE
+        }
+      };
 
 			//set up dashboard
-			jgui::jregion_t<int> dashboard ;
+			jgui::jrect_t<int> dashboard ;
 
-			dashboard.x = 0;
-			dashboard.y = size.height - DASHBOARD_SIZE;
-			dashboard.width = size.width;
-			dashboard.height = DASHBOARD_SIZE;
+			dashboard = {
+        .point = {
+          .x = 0,
+			    .y = size.height - DASHBOARD_SIZE
+        },
+        .size = {
+			    .width = size.width,
+			    .height = DASHBOARD_SIZE
+        }
+      };
 
 			InitButtons();
 		}
@@ -1113,7 +1163,7 @@ class Screen : public jgui::Window {
 			for (int i = BUTTON_COUNT; i--;) {
 				jbutton_rect_t r = _buttons[i];
 
-				if (_mb_x > r.rect.x && _mb_x <= r.rect.x+r.rect.width && _mb_y > r.rect.y && _mb_y <= r.rect.y+r.rect.height) {
+				if (_mb_x > r.rect.point.x && _mb_x <= r.rect.point.x + r.rect.size.width && _mb_y > r.rect.point.y && _mb_y <= r.rect.point.y + r.rect.size.height) {
 					_current_particle = r.particleType;
 				}
 			}
@@ -1209,15 +1259,20 @@ class Screen : public jgui::Window {
 				if (_current_particle == button.particleType) {
 					DrawRect(g, button.rect, 0xff000000);
 
-					g->DrawString(GetParticleName(_current_particle), {0, button.rect.y, size.width - BUTTON_GAP, button.rect.height}, jgui::JHA_RIGHT);
+					g->DrawString(GetParticleName(_current_particle), {0, button.rect.point.y, size.width - BUTTON_GAP, button.rect.size.height}, jgui::JHA_RIGHT);
 				}
 			}
 		}
 
 		void drawCursor(jgui::Graphics *g, int x, int y)
 		{
-			jgui::jregion_t<int> partHorizontal = { x+1, y+1, 4, 1 };
-			jgui::jregion_t<int> partVertical = { x+1, y+1, 1, 4 };
+			jgui::jrect_t<int> 
+        partHorizontal = { 
+          x + 1, y + 1, 4, 1 
+        },
+        partVertical = { 
+          x + 1, y + 1, 1, 4 
+        };
 
 			FillRect(g, partHorizontal, 0xffff00ff);
 			FillRect(g, partVertical, 0xffff00ff);
@@ -1227,39 +1282,33 @@ class Screen : public jgui::Window {
 		{
       jgui::jsize_t<int>
         wsize = GetSize();
-			jgui::jregion_t<int> 
-        size = { wsize.width - BUTTON_SIZE, wsize.height - BUTTON_SIZE - 1, 0, 0 };
+			jgui::jrect_t<int> 
+        rect = { wsize.width - BUTTON_SIZE, wsize.height - BUTTON_SIZE - 1, 0, 0 };
 
 			switch (_pen_size) {
 				case 1:
-					size.width = 1;
-					size.height = 1;
+					rect.size = {1, 1};
 					break;
 				case 2:
-					size.width = 2;
-					size.height = 2;
+					rect.size = {2, 2};
 					break;
 				case 4:
-					size.width = 3;
-					size.height = 3;
+					rect.size = {3, 3};
 					break;
 				case 8:
-					size.width = 5;
-					size.height = 5;
+					rect.size = {5, 5};
 					break;
 				case 16:
-					size.width = 7;
-					size.height = 7;
+					rect.size = {7, 7};
 					break;
 				case 32:
-					size.width = 9;
-					size.height = 9;
+					rect.size = {9, 9};
 					break;
 				default:
 					break;
 			}
 
-			FillRect(g, size, 0xff000000);
+			FillRect(g, rect, 0xff000000);
 		}
 
 		virtual bool KeyPressed(jevent::KeyEvent *event) 
@@ -1662,12 +1711,18 @@ class Screen : public jgui::Window {
 			}
 
 			// Update dashboard
-			jgui::jregion_t<int> dashboard;
+			jgui::jrect_t<int> dashboard;
 
-			dashboard.x = 0;
-			dashboard.y = size.height - DASHBOARD_SIZE;
-			dashboard.width = size.width;
-			dashboard.height = DASHBOARD_SIZE;
+			dashboard = {
+        .point = {
+          .x = 0,
+			    .y = size.height - DASHBOARD_SIZE
+        },
+        .size = {
+			    .width = size.width,
+			    .height = DASHBOARD_SIZE
+        }
+      };
 
 			FillRect(g, dashboard, 0xff9b9b9b);
 
