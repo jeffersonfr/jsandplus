@@ -115,7 +115,7 @@ class Screen : public jgui::Window {
 
 	public:
 		Screen():
-			jgui::Window(0, 0, 720, 480)
+			jgui::Window({720, 480})
 		{
       jgui::jsize_t<int>
         size = GetSize();
