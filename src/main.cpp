@@ -4,6 +4,7 @@
  */
 #include "jcanvas/core/japplication.h"
 #include "jcanvas/core/jwindow.h"
+#include "jcanvas/core/jenum.h"
 
 #include <math.h>
 #include <stdio.h>
@@ -81,7 +82,7 @@ typedef struct {
 	jparticle_type_t particleType;
 } jbutton_rect_t;
 
-class Screen : public jcanvas::Window {
+class Screen : public jcanvas::Window, public jcanvas::KeyListener, public jcanvas::MouseListener {
 
 	private:
 		jparticle_type_t *_vs;
@@ -1259,7 +1260,7 @@ class Screen : public jcanvas::Window {
 				if (_current_particle == button.particleType) {
 					DrawRect(g, button.rect, 0xff000000);
 
-					g->DrawString(GetParticleName(_current_particle), {0, button.rect.point.y, size.x - BUTTON_GAP, button.rect.size.y}, jcanvas::JHA_RIGHT);
+					g->DrawString(GetParticleName(_current_particle), {0, button.rect.point.y, size.x - BUTTON_GAP, button.rect.size.y}, jcanvas::jhorizontal_align_t::Right);
 				}
 			}
 		}
@@ -1313,15 +1314,11 @@ class Screen : public jcanvas::Window {
 
 		virtual bool KeyPressed(jcanvas::KeyEvent *event) 
 		{
-			if (jcanvas::Window::KeyPressed(event) == true) {
-				return true;
-			}
-
 			jcanvas::jkeyevent_symbol_t s = event->GetSymbol();
 
-			if (s == jcanvas::JKS_ENTER) {
+			if (s == jcanvas::jkeyevent_symbol_t::Enter) {
 				Clear();
-			} else if (s == jcanvas::JKS_CURSOR_LEFT) {
+			} else if (s == jcanvas::jkeyevent_symbol_t::CursorLeft) {
 				for (int i = BUTTON_COUNT; i--;) {
 					if (_current_particle == _buttons[i].particleType) {
 						if (i > 0) {
@@ -1333,7 +1330,7 @@ class Screen : public jcanvas::Window {
 						break;
 					}
 				}
-			} else if (s == jcanvas::JKS_CURSOR_RIGHT) {
+			} else if (s == jcanvas::jkeyevent_symbol_t::CursorRight) {
 				for (int i = BUTTON_COUNT; i--;) {
 					if (_current_particle == _buttons[i].particleType) {
 						if (i < BUTTON_COUNT - 1) {
@@ -1345,21 +1342,21 @@ class Screen : public jcanvas::Window {
 						break;
 					}
 				}
-			} else if (s == jcanvas::JKS_CURSOR_UP) { // decrease pen size
+			} else if (s == jcanvas::jkeyevent_symbol_t::CursorUp) { // decrease pen size
 				_pen_size *= 2;
 				
 				if (_pen_size > 32) {
 					_pen_size = 32;
 				}
-			} else if (s == jcanvas::JKS_CURSOR_DOWN) { // increase pen size
+			} else if (s == jcanvas::jkeyevent_symbol_t::CursorDown) { // increase pen size
 				_pen_size /= 2;
 
 				if (_pen_size < 1) {
 					_pen_size = 1;
 				}
-			} else if (s == jcanvas::JKS_SPACE) {
+			} else if (s == jcanvas::jkeyevent_symbol_t::Space) {
 				_current_particle = JPT_NOTHING;
-			} else if (s == jcanvas::JKS_TAB) {
+			} else if (s == jcanvas::jkeyevent_symbol_t::Tab) {
 				_oil_density -= 0.05f;
 				_salt_density -= 0.05f;
 				_water_density -= 0.05f;
@@ -1380,7 +1377,7 @@ class Screen : public jcanvas::Window {
 				if (_sand_density < 0.05f) {
 					_sand_density = 0.05f;
 				}
-			} else if (s == jcanvas::JKS_BACKSPACE) {
+			} else if (s == jcanvas::jkeyevent_symbol_t::Backspace) {
 				_oil_density += 0.05f;
 				_salt_density += 0.05f;
 				_water_density += 0.05f;
@@ -1408,7 +1405,7 @@ class Screen : public jcanvas::Window {
 			jcanvas::jkeyevent_modifiers_t 
         m = event->GetModifiers();
 
-			if (m & jcanvas::JKM_CONTROL) { 
+			if (jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Control)) { 
 				_mb_x = _old_x;
 				_mb_y = _old_y;
 
@@ -1417,106 +1414,106 @@ class Screen : public jcanvas::Window {
 				}
 
 				_is_button_down = true;
-			} else if (m & jcanvas::JKM_ALTGR) { 
+			} else if (jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::AltGr)) { 
 				_slow = true;
-			} else if (m & jcanvas::JKM_SHIFT) { 
+			} else if (jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Shift)) { 
 				_emit_oil ^= true;
 				_emit_salt ^= true;
 				_emit_water ^= true;
 				_emit_sand ^= true;
 			}
 
-			if (s == jcanvas::JKS_0) { // eraser
+			if (s == jcanvas::jkeyevent_symbol_t::Number0) { // eraser
 				_current_particle = JPT_NOTHING;
-			} else if (s == jcanvas::JKS_1) { // wall
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number1) { // wall
 				_current_particle = JPT_WALL;
-			} else if (s == jcanvas::JKS_2) { // water
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number2) { // water
 				_current_particle = JPT_WATER;
-			} else if (s == jcanvas::JKS_3) { // dirty
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number3) { // dirty
 				_current_particle = JPT_SAND;
-			} else if (s == jcanvas::JKS_4) { // salt
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number4) { // salt
 				_current_particle = JPT_SALT;
-			} else if (s == jcanvas::JKS_5) { // oil
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number5) { // oil
 				_current_particle = JPT_OIL;
-			} else if (s == jcanvas::JKS_6) { // acid
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number6) { // acid
 				_current_particle = JPT_ACID;
-			} else if (s == jcanvas::JKS_7) { // fire
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number7) { // fire
 				_current_particle = JPT_FIRE;
-			} else if (s == jcanvas::JKS_8) { // electricity
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number8) { // electricity
 				_current_particle = JPT_ELEC;
-			} else if (s == jcanvas::JKS_9) { // torch
+			} else if (s == jcanvas::jkeyevent_symbol_t::Number9) { // torch
 				_current_particle = JPT_TORCH;
-			} else if (s == jcanvas::JKS_F1) { // mud
+			} else if (s == jcanvas::jkeyevent_symbol_t::F1) { // mud
 				_current_particle = JPT_MUD;
-			} else if (s == jcanvas::JKS_F2) { // saltwater
+			} else if (s == jcanvas::jkeyevent_symbol_t::F2) { // saltwater
 				_current_particle = JPT_SALTWATER;
-			} else if (s == jcanvas::JKS_F3) { // steam
+			} else if (s == jcanvas::jkeyevent_symbol_t::F3) { // steam
 				_current_particle = JPT_STEAM;
-			} else if (s == jcanvas::JKS_F4) { // ice
+			} else if (s == jcanvas::jkeyevent_symbol_t::F4) { // ice
 				_current_particle = JPT_ICE;
-			} else if (s == jcanvas::JKS_DELETE) { // clear screen
+			} else if (s == jcanvas::jkeyevent_symbol_t::Delete) { // clear screen
 				Clear();
-			} else if (s == jcanvas::JKS_v) { // enable or disable oil emitter
+			} else if (s == jcanvas::jkeyevent_symbol_t::v) { // enable or disable oil emitter
 				_emit_oil ^= true;
-			} else if (s == jcanvas::JKS_r) { // increase oil emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::r) { // increase oil emitter density
 				_oil_density += 0.05f;
 
 				if (_oil_density > 1.0f) {
 					_oil_density = 1.0f;
 				}
-			} else if (s == jcanvas::JKS_f) { // decrease oil emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::f) { // decrease oil emitter density
 				_oil_density -= 0.05f;
 
 				if (_oil_density < 0.05f) {
 					_oil_density = 0.05f;
 				}
-			} else if (s == jcanvas::JKS_c) { // enable or disable salt emitter
+			} else if (s == jcanvas::jkeyevent_symbol_t::c) { // enable or disable salt emitter
 				_emit_salt ^= true;
-			} else if (s == jcanvas::JKS_e) { // increase salt emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::e) { // increase salt emitter density
 				_salt_density += 0.05f;
 
 				if (_salt_density > 1.0f) {
 					_salt_density = 1.0f;
 				}
-			} else if (s == jcanvas::JKS_d) { // decrease salt emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::d) { // decrease salt emitter density
 				_salt_density -= 0.05f;
 
 				if (_salt_density < 0.05f) {
 					_salt_density = 0.05f;
 				}
-			} else if (s == jcanvas::JKS_z) { // enable or disable water emitter
+			} else if (s == jcanvas::jkeyevent_symbol_t::z) { // enable or disable water emitter
 				_emit_water ^= true;
-			} else if (s == jcanvas::JKS_q) { // increase water emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::q) { // increase water emitter density
 				_water_density += 0.05f;
 
 				if (_water_density > 1.0f) {
 					_water_density = 1.0f;
 				}
-			} else if (s == jcanvas::JKS_a) { // decrease water emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::a) { // decrease water emitter density
 				_water_density -= 0.05f;
 
 				if (_water_density < 0.05f) {
 					_water_density = 0.05f;
 				}
-			} else if (s == jcanvas::JKS_x) { // enable or disable dirt emitter
+			} else if (s == jcanvas::jkeyevent_symbol_t::x) { // enable or disable dirt emitter
 				_emit_sand ^= true;
-			} else if (s == jcanvas::JKS_w) { // increase dirt emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::w) { // increase dirt emitter density
 				_sand_density += 0.05f;
 
 				if (_sand_density > 1.0f) {
 					_sand_density = 1.0f;
 				}
-			} else if (s == jcanvas::JKS_s) { // decrease dirt emitter density
+			} else if (s == jcanvas::jkeyevent_symbol_t::s) { // decrease dirt emitter density
 				_sand_density -= 0.05f;
 
 				if (_sand_density < 0.05f) {
 					_sand_density = 0.05f;
 				}
-			} else if (s == jcanvas::JKS_t) { // draw a bunch of random lines
+			} else if (s == jcanvas::jkeyevent_symbol_t::t) { // draw a bunch of random lines
 				DoRandomLines(JPT_WALL);
-			} else if (s == jcanvas::JKS_y) { // erase a bunch of random lines
+			} else if (s == jcanvas::jkeyevent_symbol_t::y) { // erase a bunch of random lines
 				DoRandomLines(JPT_NOTHING);
-			} else if (s == jcanvas::JKS_o) { // enable or disable particle swaps
+			} else if (s == jcanvas::jkeyevent_symbol_t::o) { // enable or disable particle swaps
 				_implement_particle_swaps ^= true;
 			}
 
@@ -1525,17 +1522,13 @@ class Screen : public jcanvas::Window {
 
 		virtual bool KeyReleased(jcanvas::KeyEvent *event) 
 		{
-			if (jcanvas::Window::KeyReleased(event) == true) {
-				return true;
-			}
-
 			jcanvas::jkeyevent_modifiers_t m = event->GetModifiers();
 
-			if ((m & jcanvas::JKM_CONTROL) == 0) { 
+			if (!jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Control)) { 
 				_mb_x = 0;
 				_mb_y = 0;
 				_is_button_down = false;
-			} else if ((m & jcanvas::JKM_ALT) == 0) { 
+      } else if (!jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Alt)) { 
 				_slow = false;
 			}
 
@@ -1544,10 +1537,6 @@ class Screen : public jcanvas::Window {
 
 		virtual bool MousePressed(jcanvas::MouseEvent *event)
 		{
-			if (jcanvas::Window::MousePressed(event) == true) {
-				return true;
-			}
-
       jcanvas::jpoint_t<int>
         location = event->GetLocation();
       jcanvas::jpoint_t<int>
@@ -1569,10 +1558,6 @@ class Screen : public jcanvas::Window {
 
 		virtual bool MouseReleased(jcanvas::MouseEvent *event)
 		{
-			if (jcanvas::Window::MouseReleased(event) == true) {
-				return true;
-			}
-
       jcanvas::jpoint_t<int>
         location = event->GetLocation();
       jcanvas::jpoint_t<int>
@@ -1591,10 +1576,6 @@ class Screen : public jcanvas::Window {
 
 		virtual bool MouseMoved(jcanvas::MouseEvent *event)
 		{
-			if (jcanvas::Window::MouseMoved(event) == true) {
-				return true;
-			}
-
       jcanvas::jpoint_t<int>
         location = event->GetLocation();
       jcanvas::jpoint_t<int>

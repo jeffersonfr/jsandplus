@@ -11,14 +11,10 @@ include_directories(
   ${JCANVAS_INCLUDE_DIRS}
 )
 
-macro(app)
-  add_executable(${ARGV0}
-    ${ARGV0}.cpp
+add_executable(jsandplus
+    main.cpp
   )
 
-  target_link_libraries(${ARGV0}
-    ${JCANVAS_LIBRARIES}
-  )
-endmacro()
-
-app(main)
+target_link_libraries(jsandplus
+  ${JCANVAS_LIBRARIES}
+)
