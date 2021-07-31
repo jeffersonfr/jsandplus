@@ -1405,7 +1405,7 @@ class Screen : public jcanvas::Window, public jcanvas::KeyListener, public jcanv
 			jcanvas::jkeyevent_modifiers_t 
         m = event->GetModifiers();
 
-			if (jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Control)) { 
+			if (jcanvas::jenum_t<jcanvas::jkeyevent_modifiers_t>{m}.And(jcanvas::jkeyevent_modifiers_t::Control)) { 
 				_mb_x = _old_x;
 				_mb_y = _old_y;
 
@@ -1414,9 +1414,9 @@ class Screen : public jcanvas::Window, public jcanvas::KeyListener, public jcanv
 				}
 
 				_is_button_down = true;
-			} else if (jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::AltGr)) { 
+			} else if (jcanvas::jenum_t<jcanvas::jkeyevent_modifiers_t>{m}.And(jcanvas::jkeyevent_modifiers_t::AltGr)) { 
 				_slow = true;
-			} else if (jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Shift)) { 
+			} else if (jcanvas::jenum_t<jcanvas::jkeyevent_modifiers_t>{m}.And(jcanvas::jkeyevent_modifiers_t::Shift)) { 
 				_emit_oil ^= true;
 				_emit_salt ^= true;
 				_emit_water ^= true;
@@ -1524,11 +1524,11 @@ class Screen : public jcanvas::Window, public jcanvas::KeyListener, public jcanv
 		{
 			jcanvas::jkeyevent_modifiers_t m = event->GetModifiers();
 
-			if (!jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Control)) { 
+			if (!jcanvas::jenum_t<jcanvas::jkeyevent_modifiers_t>{m}.And(jcanvas::jkeyevent_modifiers_t::Control)) { 
 				_mb_x = 0;
 				_mb_y = 0;
 				_is_button_down = false;
-      } else if (!jcanvas::jenum_t{m}.And(jcanvas::jkeyevent_modifiers_t::Alt)) { 
+      } else if (!jcanvas::jenum_t<jcanvas::jkeyevent_modifiers_t>{m}.And(jcanvas::jkeyevent_modifiers_t::Alt)) { 
 				_slow = false;
 			}
 
